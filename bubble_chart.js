@@ -96,7 +96,9 @@ function bubbleChart() {
    * array for each element in the rawData input.
    */
   function createNodes(rawData) {
-   // var incomes = nodes.filter(node => node.cat == "Income after taxes");
+    // Use the max total_amount in the data as the max in the scale's domain
+    // note we have to ensure the total_amount is a number.
+    
     var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
     var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
     var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
@@ -107,6 +109,7 @@ function bubbleChart() {
       average: maxAvg,
       highest: maxHigh
     };
+    var incomes = nodes.filter(node => node.cat == "Income after taxes");
 
     // Size bubbles based on area.
     var radiusScaleHigh = d3.scalePow()
@@ -218,8 +221,16 @@ function bubbleChart() {
           return fillColor2(d.group);
         }
       })
-      .attr('stroke', function (d) { return d3.rgb(fillColor(d.cat)).darker(); })
-      .attr('stroke-width', 5)
+      .attr('stroke', function (d) {
+        //get the value of the checked
+        var value = d3.select('input[name="colorgroups"]:checked').node().value;
+        if (value == "byCat") {
+          return d3.rgb(fillColor(d.cat)).darker();
+        } else {
+          return d3.rgb(fillColor2(d.group)).darker();
+        }
+      })
+      .attr('stroke-width', 3)
       .on('mouseover', showDetail)
       .on('mouseout', hideDetail);
 
