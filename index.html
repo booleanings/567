@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Consumer Expenditure Visualizations</title>
+  <meta name="author" content="Aida and Ishita">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/bubble_chart.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Average American Consumer Expenditure Visualized</h1>
+    <div id="toolbar">
+      <a href="#" id="all" class="button active">Highest Ten Percent</a>
+      <a href="#" id="year" class="button">Grants By Year</a>
+      <a href="#" id="maxamt">Total Income</a>
+    </div>
+    <div id="vis"></div>
+
+    <div class="footer">
+      <p>This bubble chart represents the spending of those making the Highest
+        tenth percentile income. Each bubble represents a category. Hover over to 
+        see the category name and average spending per year. 
+      </p>
+      <p><a href="https://www.bls.gov/cex/">Data Source</a> | <a href="https://github.com/vlandham/bubble_chart_v4">Inspiration</a></p>
+    </div>
+  </div>
+
+  <script src="//d3js.org/d3.v5.min.js"></script>
+  <script src="tooltip.js"></script>
+  <script src="bubble_chart.js"></script>
+
+  
+  
+
+
+</body>
+</html>
