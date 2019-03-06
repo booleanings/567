@@ -75,9 +75,9 @@ function bubbleChart() {
 
   var fillColor = d3.scaleOrdinal(d3.schemeCategory10);
 
-  //var fillColor2 = d3.scaleOrdinal()
-    //.domain(['lowest', 'average', 'highest'])
-    //.range(['#d84b2a', '#beccae', '#7aa25c']);
+  var fillColor2 = d3.scaleOrdinal()
+    .domain(['lowest', 'average', 'highest'])
+    .range(['#d84b2a', '#beccae', '#7aa25c']);
 
   /*
    * This data manipulation function takes the raw data from
