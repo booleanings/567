@@ -7,6 +7,11 @@ a, a:visited, a:active {
   margin: auto;
 }
 
+#legend {
+  margin-top: 20%;
+  margin: 10%;
+  color: red;
+}
 .button {
   min-width: 130px;
   padding: 4px 5px;
@@ -32,8 +37,14 @@ a, a:visited, a:active {
 
 #toolbar {
   margin-top: 10px;
+  
 }
 
+h1 {
+  color: floralwhite;
+  background-color: darkslategray;
+  padding: 3%;
+}
 .year {
   font-size: 21px;
   fill: #aaa;

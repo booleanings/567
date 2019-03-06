@@ -18,18 +18,24 @@ function bubbleChart() {
   // on which view mode is selected.
   var center = { x: width / 2, y: height / 2 };
 
-  var bubbleCenters = {
-    //2008: { x: width / 3, y: height / 2 },
-    lowest: { x: width / 3, y: height / 2 },
+  var yearCenters = {
+    average: { x: width / 3, y: height / 2 },
+    lowest: { x: width / 2, y: height / 2 },
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
-  // X locations of the year titles.
   var percentileTitles = {
     //2008: 160,
     lowest: 265,
     highest: width - 290
+  }
+  var yearsTitleX = {
+    average: 160,
+    lowest: width / 2,
+    highest: width - 160
   };
+
+  var decileMaxs = {};
 
   // @v4 strength to apply to the position forces
   var forceStrength = 0.03;
@@ -73,9 +79,15 @@ function bubbleChart() {
 
   // Nice looking colors - no reason to buck the trend
   // @v4 scales now have a flattened naming scheme
+
   var fillColor = d3.scaleOrdinal(d3.schemeCategory10);
    // .domain(['low', 'medium', 'high'])
     //.range(['#d84b2a', '#beccae', '#7aa25c']);
+
+  var fillColor2 = d3.scaleOrdinal()
+    .domain(['lowest', 'average', 'highest'])
+    .range(['#d84b2a', '#beccae', '#7aa25c']);
+  
 
 
   /*
@@ -93,43 +105,86 @@ function bubbleChart() {
   function createNodes(rawData) {
     // Use the max total_amount in the data as the max in the scale's domain
     // note we have to ensure the total_amount is a number.
-    var maxAmount = d3.max(rawData, function (d) { return +d.highest; });
-    
+    var incomes = nodes.filter(node => node.cat == "Income after taxes");
+    var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
+    var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
+    var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
+    var totalSpent = maxHigh + maxLow + maxAvg;
+    document.getElementById("maxamt").innerHTML = "Total Avg Spendings by Average, Lowest, and Highest Income Levels: $" + totalSpent; 
+    decileMaxs = {
+      lowest: maxLow,
+      average: maxAvg,
+      highest: maxHigh
+    };
+
 
     // Sizes bubbles based on area.
     // @v4: new flattened scale names.
-    var radiusScale = d3.scalePow()
+    var radiusScaleHigh = d3.scalePow()
       .exponent(0.5)
       .range([2, 85])
-      .domain([0, maxAmount]);
+      .domain([0, maxHigh]);
+    var radiusScaleLow = d3.scalePow()
+      .exponent(0.5)
+      .range([2, 85])
+      .domain([0, maxLow]);
+    var radiusScaleAvg = d3.scalePow()
+      .exponent(0.5)
+      .range([2, 85])
+      .domain([0, maxAvg]);
 
     // Use map() to convert raw data into node data.
     // Checkout http://learnjsdata.com/ for more on
     // working with data.
     var highestNodes = rawData.map(function (d) {
+      var a = +d.highest/maxHigh*100;
+      var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
-        radius: radiusScale(+d.highest),
+        radius: radiusScaleHigh(+d.highest),
         value: +d.highest,
         name: d.cat,
         group: "highest",
+        percentTotal: truncated,
+        x: Math.random() * 900,
+        y: Math.random() * 800
+      };
+    });
+    
+    
+    var lowestNodes = rawData.map(function (d) {
+      var a = +d.lowest/maxLow*100;
+      var truncated = Math.floor(a * 100) / 100;
+      return {
+        cat: d.cat,
+        radius: radiusScaleLow(+d.lowest),
+        value: +d.lowest,
+        name: d.cat,
+        group: "lowest",
+        percentTotal: truncated,
         x: Math.random() * 900,
         y: Math.random() * 800
       };
     });
 
-    var lowestNodes = rawData.map(function (d) {
+    var avgNodes = rawData.map(function (d) {
+      var a = +d.lowest/maxAvg*100;
+      var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
-        radius: radiusScale(+d.lowest),
-        value: +d.lowest,
+        radius: radiusScaleAvg(+d.fifth),
+        value: +d.fifth,
         name: d.cat,
-        group: "lowest",
+        group: "average",
+        percentTotal: truncated,
         x: Math.random() * 900,
         y: Math.random() * 800
       };
     });
-    nodes = lowestNodes.concat(highestNodes);
+    
+    nodes = lowestNodes.concat(highestNodes).concat(avgNodes);
+    
+    nodes = nodes.filter(node => node.cat != "Income after taxes");
     // sort them to prevent occlusion of smaller nodes.
     nodes.sort(function (a, b) { return b.value - a.value; });
 
@@ -193,8 +248,37 @@ function bubbleChart() {
 
     // Set initial layout to single group.
     groupBubbles();
+    setupLegend();
   };
 
+  function setupLegend() {
+    var legendRectSize = 30;
+    var legendSpacing = 10;
+    var legend = d3.select('svg')
+      .append("g")
+      .attr('id', 'legend')
+      .selectAll("g")
+      .data(fillColor.domain())
+      .enter()
+      .append('g')
+        .attr('transform', function(d, i) {
+          var height = legendRectSize;
+          var x = 0;
+          var y = i * height + 100;
+          return 'translate(' + x + ',' + y + ')';
+      });
+      legend.append('rect')
+        .attr('width', legendRectSize)
+        .attr('height', legendRectSize)
+        .style('fill', fillColor)
+        .style('stroke', fillColor);
+
+    legend.append('text')
+        .attr('x', legendRectSize + legendSpacing)
+        .attr('y', legendRectSize - legendSpacing)
+        .text(function(d) { return d; });
+
+  }
   /*
    * Callback function that is called after every tick of the
    * force simulation.
@@ -203,6 +287,7 @@ function bubbleChart() {
    * These x and y values are modified by the force simulation.
    */
   function ticked() {
+
     bubbles
       .attr('cx', function (d) { return d.x; })
       .attr('cy', function (d) { return d.y; });
@@ -272,7 +357,7 @@ function bubbleChart() {
       .attr('x', function (d) { return percentileTitles[d]; })
       .attr('y', 40)
       .attr('text-anchor', 'middle')
-      .text(function (d) { return d; });
+      .text(function (d) { return d + "\n | avg_inc: $" + decileMaxs[d]; })
   }
 
 
@@ -290,9 +375,9 @@ function bubbleChart() {
                   '<span class="name">Amount: </span><span class="value">$' +
                   addCommas(d.value) +
                   '</span><br/>' +
-                  '<span class="name">Year: </span><span class="value">' +
-                  d.year +
-                  '</span>';
+                  '<span class="name">Percent of Total Income: </span><span class="value">' +
+                  d.percentTotal +
+                  '%</span>';
 
     tooltip.showTooltip(content, d3.event);
   }
@@ -387,6 +472,8 @@ function addCommas(nStr) {
 
   return x1 + x2;
 }
+
+
 
 // Load the data.
 // d3.csv('spending_clean.csv', display);
