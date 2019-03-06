@@ -32,8 +32,14 @@ a, a:visited, a:active {
 
 #toolbar {
   margin-top: 10px;
+  
 }
 
+h1 {
+  color: floralwhite;
+  background-color: darkslategray;
+  padding: 3%;
+}
 .year {
   font-size: 21px;
   fill: #aaa;

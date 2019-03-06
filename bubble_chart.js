@@ -93,38 +93,50 @@ function bubbleChart() {
   function createNodes(rawData) {
     // Use the max total_amount in the data as the max in the scale's domain
     // note we have to ensure the total_amount is a number.
-    var maxAmount = d3.max(rawData, function (d) { return +d.highest; });
+    var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
+    var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
     
 
     // Sizes bubbles based on area.
     // @v4: new flattened scale names.
-    var radiusScale = d3.scalePow()
+    var radiusScaleHigh = d3.scalePow()
       .exponent(0.5)
       .range([2, 85])
-      .domain([0, maxAmount]);
+      .domain([0, maxHigh]);
+    var radiusScaleLow = d3.scalePow()
+      .exponent(0.5)
+      .range([2, 85])
+      .domain([0, maxLow]);
 
     // Use map() to convert raw data into node data.
     // Checkout http://learnjsdata.com/ for more on
     // working with data.
     var highestNodes = rawData.map(function (d) {
+      var a = +d.highest/maxHigh*100;
+      var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
-        radius: radiusScale(+d.highest),
+        radius: radiusScaleHigh(+d.highest),
         value: +d.highest,
         name: d.cat,
         group: "highest",
+        percentTotal: truncated,
         x: Math.random() * 900,
         y: Math.random() * 800
       };
     });
-
+    
+    
     var lowestNodes = rawData.map(function (d) {
+      var a = +d.lowest/maxLow*100;
+      var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
-        radius: radiusScale(+d.lowest),
+        radius: radiusScaleLow(+d.lowest),
         value: +d.lowest,
         name: d.cat,
         group: "lowest",
+        percentTotal: truncated,
         x: Math.random() * 900,
         y: Math.random() * 800
       };
@@ -290,9 +302,9 @@ function bubbleChart() {
                   '<span class="name">Amount: </span><span class="value">$' +
                   addCommas(d.value) +
                   '</span><br/>' +
-                  '<span class="name">Year: </span><span class="value">' +
-                  d.year +
-                  '</span>';
+                  '<span class="name">Percent of Total Income: </span><span class="value">' +
+                  d.percentTotal +
+                  '%</span>';
 
     tooltip.showTooltip(content, d3.event);
   }
