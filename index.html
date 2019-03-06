@@ -15,8 +15,14 @@
     <div id="toolbar">
       <a href="#" id="all" class="button active">Total Expenditure</a>
       <a href="#" id="year" class="button">Expenditure by Percentile</a>
-      <a href="#" id="maxamt">Total Avg Spendings by Average, Lowest, and Highest Income Levels</a>
+        <p> </p>
+       <label class="switch">Color by:
+       <input type="radio" name="colorgroups" value="byCat" > Spending Category 
+        <input type="radio" name="colorgroups" value="byIncome"> Income Level
+    </label>
+    <p id="maxamt">Total Avg Spendings by Average, Lowest, and Highest Income Levels</p>
     </div>
+    
     <div id="vis"></div>
 
     <div class="footer">

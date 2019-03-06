@@ -222,7 +222,15 @@ function bubbleChart() {
     var bubblesE = bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .attr('fill', function (d) { return fillColor(d.cat); })
+      .style("fill", function(d){
+                   //get the value of the checked
+                   var value = d3.select('input[name="colorgroups"]:checked').node().value;
+                   if(value =="byCat"){
+                      return fillColor(d.cat);
+                   } else {
+                      return fillColor2(d.group); 
+                   }
+       })
       .attr('stroke', function (d) { return d3.rgb(fillColor(d.cat)).darker(); })
       .attr('stroke-width', 2)
       .on('mouseover', showDetail)
@@ -247,32 +255,45 @@ function bubbleChart() {
   };
 
   function setupLegend() {
-    var legendRectSize = 20;
-    var legendSpacing = 7;
+    clearLegend();
+    var value = d3.select('input[name="colorgroups"]:checked').node().value;
+    var legendData;
+    if(value =="byCat"){
+      legendData = fillColor;
+    }
+    else {
+      legendData = fillColor2;
+    }
+    console.log(legendData + " " + value);
+    var legendRectSize = 30;
+    var legendSpacing = 10;
     var legend = d3.select('svg')
-      .append("g")   
+      .append("g")
       .attr('id', 'legend')
       .selectAll("g")
-      .data(fillColor.domain())
+      .data(legendData.domain())
       .enter()
       .append('g')
         .attr('transform', function(d, i) {
           var height = legendRectSize;
-          var x = -10;
+          var x = 0;
           var y = i * height + 100;
           return 'translate(' + x + ',' + y + ')';
       });
       legend.append('rect')
         .attr('width', legendRectSize)
         .attr('height', legendRectSize)
-        .style('fill', fillColor)
-        .style('stroke', fillColor);
+        .style('fill', legendData)
+        .style('stroke', legendData);
 
     legend.append('text')
         .attr('x', legendRectSize + legendSpacing)
         .attr('y', legendRectSize - legendSpacing)
         .text(function(d) { return d; });
-
+  }
+  function clearLegend() {
+    d3.select('#legend')
+    .remove();
   }
   /*
    * Callback function that is called after every tick of the
@@ -285,7 +306,17 @@ function bubbleChart() {
 
     bubbles
       .attr('cx', function (d) { return d.x; })
-      .attr('cy', function (d) { return d.y; });
+      .attr('cy', function (d) { return d.y; })
+      .style("fill", function(d){
+                   //get the value of the checked
+                   var value = d3.select('input[name="colorgroups"]:checked').node().value;
+                   if(value =="byCat"){
+                      return fillColor(d.cat);
+                   } else {
+                      return fillColor2(d.group); 
+                   }
+      });
+      setupLegend();
   }
 
   /*
@@ -468,8 +499,7 @@ function addCommas(nStr) {
   return x1 + x2;
 }
 
-
-
+function main() {
 // Load the data.
 // d3.csv('spending_clean.csv', display);
 d3.csv('spending_clean.csv')
@@ -479,5 +509,8 @@ d3.csv('spending_clean.csv')
   .catch(function(error){
      console.log(error);
   })
+}
+
+main();
 // setup the buttons.
 setupButtons();

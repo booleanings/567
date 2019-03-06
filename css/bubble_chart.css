@@ -12,6 +12,9 @@ a, a:visited, a:active {
   margin: 10%;
   color: red;
 }
+.switch{
+  margin-top: 10%;
+}
 .button {
   min-width: 130px;
   padding: 4px 5px;
