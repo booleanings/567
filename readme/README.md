@@ -23,3 +23,10 @@ Another important point our visualization helped illuminate was the variation in
 
 The scaling for the bubble's radii helps users easily compare spending per total as opposed to total spending. 
 
+## Future Goals
+If we had more time, here are some changes we'd like to make to the project:
+* More fluid animations on the transformation when the bubbles move.
+* Collision protection to prevent bubble overlap.
+* Filtering of categories to allow users to only show certain categories, possibly with a radio input list form thingy.
+* Inclusion of other demographics for comparison.
+* Further breakdown of spending within category using more of the data available from the dataset.
