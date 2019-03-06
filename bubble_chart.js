@@ -8,7 +8,7 @@
  */
 function bubbleChart() {
   // Constants for sizing
-  var width = 940;
+  var width = 1200;
   var height = 600;
 
   // tooltip for mouseover functionality
@@ -24,7 +24,7 @@ function bubbleChart() {
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
-  var  percentileTitles = {
+  var percentileTitles = {
     average: 160,
     lowest: width / 2,
     highest: width - 160
@@ -32,8 +32,7 @@ function bubbleChart() {
 
   var decileMaxs = {};
 
-  // @v5 strength to apply to the position forces
-  var forceStrength = 0.03;
+  var forceStrength = 0.1;
 
   // These will be set in create_nodes and create_vis
   var svg = null;
@@ -57,13 +56,15 @@ function bubbleChart() {
   function charge(d) {
     return -Math.pow(d.radius, 2.0) * forceStrength;
   }
+  var attractForce = d3.forceManyBody().strength(30).distanceMax(1000)
+    .distanceMin(1000);
+  var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
 
-  // Here we create a force layout and
-  // a force simulation now and
-  // add forces to it.
-  var simulation = d3.forceSimulation()
+  var simulation = d3.forceSimulation().alphaDecay(.01)
     .velocityDecay(0.2)
     .force('x', d3.forceX().strength(forceStrength).x(center.x))
+    // .force("attractForce",attractForce)
+    // .force("collisionForce",collisionForce)
     .force('y', d3.forceY().strength(forceStrength).y(center.y))
     .force('charge', d3.forceManyBody().strength(charge))
     .on('tick', ticked);
@@ -91,17 +92,17 @@ function bubbleChart() {
    * array for each element in the rawData input.
    */
   function createNodes(rawData) {
-   // var incomes = nodes.filter(node => node.cat == "Income after taxes");
     var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
     var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
     var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
     var totalSpent = maxHigh + maxLow + maxAvg;
-    document.getElementById("maxamt").innerHTML = "Total Avg Spendings by Average, Lowest, and Highest Income Levels: $" + totalSpent; 
+    document.getElementById("maxamt").innerHTML = " $" + totalSpent;
     decileMaxs = {
       lowest: maxLow,
       average: maxAvg,
       highest: maxHigh
     };
+    var incomes = nodes.filter(node => node.cat == "Income after taxes");
 
     // Size bubbles based on area.
     var radiusScaleHigh = d3.scalePow()
@@ -119,7 +120,7 @@ function bubbleChart() {
 
     // Use map() to convert raw data into node data.
     var highestNodes = rawData.map(function (d) {
-      var a = +d.highest/maxHigh*100;
+      var a = +d.highest / maxHigh * 100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
@@ -134,7 +135,7 @@ function bubbleChart() {
     });
     
     var lowestNodes = rawData.map(function (d) {
-      var a = +d.lowest/maxLow*100;
+      var a = +d.lowest / maxLow * 100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
@@ -149,7 +150,7 @@ function bubbleChart() {
     });
 
     var avgNodes = rawData.map(function (d) {
-      var a = +d.fifth/maxAvg*100;
+      var a = +d.fifth / maxAvg * 100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
@@ -163,16 +164,15 @@ function bubbleChart() {
       };
     });
     
-    //put all retrieved nodes together
     nodes = lowestNodes.concat(highestNodes).concat(avgNodes);
-    
+
     nodes = nodes.filter(node => node.cat != "Income after taxes");
     //sort them to prevent occlusion of smaller nodes.
     nodes.sort(function (a, b) { return b.value - a.value; });
 
     return nodes;
   }
-  
+
   /*
    * Main entry point to the bubble chart 
    * It prepares the rawData for visualization
@@ -204,9 +204,25 @@ function bubbleChart() {
     var bubblesE = bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .attr('fill', function (d) { return fillColor(d.cat); })
-      .attr('stroke', function (d) { return d3.rgb(fillColor(d.cat)).darker(); })
-      .attr('stroke-width', 2)
+      .style("fill", function (d) {
+        //get the value of the checked
+        var value = d3.select('input[name="colorgroups"]:checked').node().value;
+        if (value == "byCat") {
+          return fillColor(d.cat);
+        } else {
+          return fillColor2(d.group);
+        }
+      })
+      .attr('stroke', function (d) {
+        //get the value of the checked
+        var value = d3.select('input[name="colorgroups"]:checked').node().value;
+        if (value == "byCat") {
+          return d3.rgb(fillColor(d.cat)).darker();
+        } else {
+          return d3.rgb(fillColor2(d.group)).darker();
+        }
+      })
+      .attr('stroke-width', 3)
       .on('mouseover', showDetail)
       .on('mouseout', hideDetail);
 
@@ -229,32 +245,59 @@ function bubbleChart() {
   };
 
   function setupLegend() {
-    var legendRectSize = 20;
-    var legendSpacing = 7;
+    clearLegend();
+    var value = d3.select('input[name="colorgroups"]:checked').node().value;
+    var legendData;
+    if (value == "byCat") {
+      legendData = fillColor;
+    }
+    else {
+      legendData = fillColor2;
+    }
+    console.log(legendData + " " + value);
+    var legendRectSize = 30;
+    var legendSpacing = 10;
     var legend = d3.select('svg')
-      .append("g")   
+      .append("g")
       .attr('id', 'legend')
       .selectAll("g")
-      .data(fillColor.domain())
+      .data(legendData.domain())
       .enter()
       .append('g')
-        .attr('transform', function(d, i) {
-          var height = legendRectSize;
-          var x = -10;
-          var y = i * height + 100;
-          return 'translate(' + x + ',' + y + ')';
+      .attr('transform', function (d, i) {
+        var height = legendRectSize;
+        var x = -20;
+        var y = i * height + 100;
+        return 'translate(' + x + ',' + y + ')';
       });
-      legend.append('rect')
-        .attr('width', legendRectSize)
-        .attr('height', legendRectSize)
-        .style('fill', fillColor)
-        .style('stroke', fillColor);
+    legend.append('rect')
+      .attr('width', legendRectSize)
+      .attr('height', legendRectSize)
+      .style('fill', legendData)
+      .style('stroke', legendData);
 
     legend.append('text')
-        .attr('x', legendRectSize + legendSpacing)
-        .attr('y', legendRectSize - legendSpacing)
-        .text(function(d) { return d; });
+      .attr('x', legendRectSize + legendSpacing)
+      .attr('y', legendRectSize - legendSpacing)
+      .text(function (d) { return d; });
+    // .on("click", function(d){
+    //     var newNodes = nodes.filter(node => node.cat == d);
+    //     // d3.selectAll('.bubble')
+    //     // .remove();
+    //     enodes = [];
+    //     simulation.nodes(enodes);
+    //     bubbles = svg.selectAll('.bubble')
+    //     .data(newNodes, function (d) { return d.id; });
+    //     simulation.nodes(newNodes);
+    //     console.log(simulation.nodes());
+    //     simulation.nodes(nodes.filter(node => node.cat == d));
 
+
+    // })
+  }
+  function clearLegend() {
+    d3.select('#legend')
+      .remove();
   }
   /*
    * Callback function that is called after every tick of the
@@ -267,7 +310,17 @@ function bubbleChart() {
 
     bubbles
       .attr('cx', function (d) { return d.x; })
-      .attr('cy', function (d) { return d.y; });
+      .attr('cy', function (d) { return d.y; })
+      .style("fill", function (d) {
+        //get the value of the checked
+        var value = d3.select('input[name="colorgroups"]:checked').node().value;
+        if (value == "byCat") {
+          return fillColor(d.cat);
+        } else {
+          return fillColor2(d.group);
+        }
+      });
+    setupLegend();
   }
 
   /*
@@ -334,14 +387,14 @@ function bubbleChart() {
     d3.select(this).attr('stroke', 'black');
 
     var content = '<span class="name">Title: </span><span class="value">' +
-                  d.name +
-                  '</span><br/>' +
-                  '<span class="name">Amount: </span><span class="value">$' +
-                  addCommas(d.value) +
-                  '</span><br/>' +
-                  '<span class="name">Percent of Total Income: </span><span class="value">' +
-                  d.percentTotal +
-                  '%</span>';
+      d.name +
+      '</span><br/>' +
+      '<span class="name">Amount: </span><span class="value">$' +
+      addCommas(d.value) +
+      '</span><br/>' +
+      '<span class="name">Percent of Total Income: </span><span class="value">' +
+      d.percentTotal +
+      '%</span>';
 
     tooltip.showTooltip(content, d3.event);
   }
@@ -430,14 +483,18 @@ function addCommas(nStr) {
   return x1 + x2;
 }
 
-// Load the data.
-// d3.csv('spending_clean.csv', display);
-d3.csv('spending_clean.csv')
-  .then(function(data) {
+function main() {
+  // Load the data.
+  // d3.csv('spending_clean.csv', display);
+  d3.csv('spending_clean.csv')
+    .then(function (data) {
       myBubbleChart('#vis', data);
-  })
-  .catch(function(error){
-     console.log(error);
-  })
+    })
+    .catch(function (error) {
+      console.log(error);
+    })
+}
+
+main();
 // setup the buttons.
 setupButtons();
