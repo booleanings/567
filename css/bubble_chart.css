@@ -16,7 +16,9 @@ a, a:visited, a:active {
 }
 .button {
   min-width: 130px;
-  padding: 4px 5px;
+  padding: .5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
   cursor: pointer;
   text-align: center;
   font-size: 13px;
@@ -27,7 +29,7 @@ a, a:visited, a:active {
 
 .button.active {
   background: darkgreen;
-  color:  mediumspringgreen;
+  color:  palegreen;
 }
 
 
@@ -44,9 +46,9 @@ a, a:visited, a:active {
 }
 
 h1 {
-  color: floralwhite;
-  background-color: darkgreen;
-  padding: 3%;
+  color: black;
+  background-color: darkseagreen;
+  padding: 1%;
 }
 .year {
   font-size: 21px;
