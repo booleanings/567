@@ -33,7 +33,7 @@ function bubbleChart() {
   var decileMaxs = {};
 
   // @v4 strength to apply to the position forces
-  var forceStrength = 0.03;
+  var forceStrength = 0.1;
 
   // These will be set in create_nodes and create_vis
   var svg = null;
@@ -57,13 +57,18 @@ function bubbleChart() {
   function charge(d) {
     return -Math.pow(d.radius, 2.0) * forceStrength;
   }
+  var attractForce = d3.forceManyBody().strength(30).distanceMax(1000)
+                     .distanceMin(1000);
+var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
 
   // Here we create a force layout and
   // @v4 We create a force simulation now and
   //  add forces to it.
-  var simulation = d3.forceSimulation()
+  var simulation = d3.forceSimulation().alphaDecay(.01)
     .velocityDecay(0.2)
     .force('x', d3.forceX().strength(forceStrength).x(center.x))
+    // .force("attractForce",attractForce)
+    // .force("collisionForce",collisionForce)
     .force('y', d3.forceY().strength(forceStrength).y(center.y))
     .force('charge', d3.forceManyBody().strength(charge))
     .on('tick', ticked);
@@ -228,7 +233,7 @@ function bubbleChart() {
                    }
        })
       .attr('stroke', function (d) { return d3.rgb(fillColor(d.cat)).darker(); })
-      .attr('stroke-width', 2)
+      .attr('stroke-width', 5)
       .on('mouseover', showDetail)
       .on('mouseout', hideDetail);
 
@@ -286,6 +291,20 @@ function bubbleChart() {
         .attr('x', legendRectSize + legendSpacing)
         .attr('y', legendRectSize - legendSpacing)
         .text(function(d) { return d; });
+        // .on("click", function(d){
+        //     var newNodes = nodes.filter(node => node.cat == d);
+        //     // d3.selectAll('.bubble')
+        //     // .remove();
+        //     enodes = [];
+        //     simulation.nodes(enodes);
+        //     bubbles = svg.selectAll('.bubble')
+        //     .data(newNodes, function (d) { return d.id; });
+        //     simulation.nodes(newNodes);
+        //     console.log(simulation.nodes());
+        //     simulation.nodes(nodes.filter(node => node.cat == d));
+            
+
+        // })
   }
   function clearLegend() {
     d3.select('#legend')
