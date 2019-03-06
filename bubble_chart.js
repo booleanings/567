@@ -76,7 +76,7 @@ function bubbleChart() {
   // Nice looking colors - no reason to buck the trend
   // @v4 scales now have a flattened naming scheme
   var fillColor = d3.scaleOrdinal()
-    .domain(['low', 'medium', 'high'])
+    .domain(['lowest', 'average', 'highest'])
     .range(['#d84b2a', '#beccae', '#7aa25c']);
 
 
@@ -238,8 +238,37 @@ function bubbleChart() {
 
     // Set initial layout to single group.
     groupBubbles();
+    setupLegend();
   };
 
+  function setupLegend() {
+    var legendRectSize = 30;
+    var legendSpacing = 10;
+    var legend = d3.select('svg')
+      .append("g")
+      .attr('id', 'legend')
+      .selectAll("g")
+      .data(fillColor.domain())
+      .enter()
+      .append('g')
+        .attr('transform', function(d, i) {
+          var height = legendRectSize;
+          var x = 0;
+          var y = i * height + 100;
+          return 'translate(' + x + ',' + y + ')';
+      });
+      legend.append('rect')
+        .attr('width', legendRectSize)
+        .attr('height', legendRectSize)
+        .style('fill', fillColor)
+        .style('stroke', fillColor);
+
+    legend.append('text')
+        .attr('x', legendRectSize + legendSpacing)
+        .attr('y', legendRectSize - legendSpacing)
+        .text(function(d) { return d; });
+
+  }
   /*
    * Callback function that is called after every tick of the
    * force simulation.
@@ -433,6 +462,8 @@ function addCommas(nStr) {
 
   return x1 + x2;
 }
+
+
 
 // Load the data.
 // d3.csv('spending_clean.csv', display);

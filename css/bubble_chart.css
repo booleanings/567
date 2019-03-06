@@ -7,6 +7,11 @@ a, a:visited, a:active {
   margin: auto;
 }
 
+#legend {
+  margin-top: 20%;
+  margin: 10%;
+  color: red;
+}
 .button {
   min-width: 130px;
   padding: 4px 5px;
