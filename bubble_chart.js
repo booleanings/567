@@ -18,17 +18,17 @@ function bubbleChart() {
   // on which view mode is selected.
   var center = { x: width / 2, y: height / 2 };
 
-  var yearCenters = {
-    2008: { x: width / 3, y: height / 2 },
-    lowest: { x: width / 2, y: height / 2 },
+  var bubbleCenters = {
+    //2008: { x: width / 3, y: height / 2 },
+    lowest: { x: width / 3, y: height / 2 },
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
   // X locations of the year titles.
-  var yearsTitleX = {
-    2008: 160,
-    lowest: width / 2,
-    highest: width - 160
+  var percentileTitles = {
+    //2008: 160,
+    lowest: 265,
+    highest: width - 290
   };
 
   // @v4 strength to apply to the position forces
@@ -73,9 +73,9 @@ function bubbleChart() {
 
   // Nice looking colors - no reason to buck the trend
   // @v4 scales now have a flattened naming scheme
-  var fillColor = d3.scaleOrdinal()
-    .domain(['low', 'medium', 'high'])
-    .range(['#d84b2a', '#beccae', '#7aa25c']);
+  var fillColor = d3.scaleOrdinal(d3.schemeCategory10);
+   // .domain(['low', 'medium', 'high'])
+    //.range(['#d84b2a', '#beccae', '#7aa25c']);
 
 
   /*
@@ -172,8 +172,8 @@ function bubbleChart() {
     var bubblesE = bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .attr('fill', function (d) { return fillColor(d.group); })
-      .attr('stroke', function (d) { return d3.rgb(fillColor(d.group)).darker(); })
+      .attr('fill', function (d) { return fillColor(d.cat); })
+      .attr('stroke', function (d) { return d3.rgb(fillColor(d.cat)).darker(); })
       .attr('stroke-width', 2)
       .on('mouseover', showDetail)
       .on('mouseout', hideDetail);
@@ -213,7 +213,7 @@ function bubbleChart() {
    * x force.
    */
   function nodeYearPos(d) {
-    return yearCenters[d.group].x;
+    return bubbleCenters[d.group].x;
   }
 
 
@@ -263,13 +263,13 @@ function bubbleChart() {
   function showYearTitles() {
     // Another way to do this would be to create
     // the year texts once and then just hide them.
-    var yearsData = d3.keys(yearsTitleX);
+    var yearsData = d3.keys(percentileTitles);
     var years = svg.selectAll('.year')
       .data(yearsData);
 
     years.enter().append('text')
       .attr('class', 'year')
-      .attr('x', function (d) { return yearsTitleX[d]; })
+      .attr('x', function (d) { return percentileTitles[d]; })
       .attr('y', 40)
       .attr('text-anchor', 'middle')
       .text(function (d) { return d; });
