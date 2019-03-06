@@ -3,7 +3,7 @@
  * it in and a dataset to visualize.
  *
  * Organization and style inspired by:
- * https://bost.ocks.org/mike/chart/
+ * http://vallandingham.me/bubble_chart_v4/#
  *
  */
 function bubbleChart() {
@@ -18,7 +18,7 @@ function bubbleChart() {
   // on which view mode is selected.
   var center = { x: width / 2, y: height / 2 };
 
-  var yearCenters = {
+  var centers = {
     average: { x: width / 3, y: height / 2 },
     lowest: { x: width / 2, y: height / 2 },
     highest: { x: 2 * width / 3, y: height / 2 },
@@ -32,7 +32,7 @@ function bubbleChart() {
 
   var decileMaxs = {};
 
-  // @v4 strength to apply to the position forces
+  // @v5 strength to apply to the position forces
   var forceStrength = 0.03;
 
   // These will be set in create_nodes and create_vis
@@ -52,15 +52,15 @@ function bubbleChart() {
   // detection with nodes of different sizes.
   //
   // Charge is negative because we want nodes to repel.
-  // @v4 Before the charge was a stand-alone attribute
-  //  of the force layout. Now we can use it as a separate force!
+  // Before the charge was a stand-alone attribute
+  // of the force layout. In v5 we can use it as a separate force!
   function charge(d) {
     return -Math.pow(d.radius, 2.0) * forceStrength;
   }
 
   // Here we create a force layout and
-  // @v4 We create a force simulation now and
-  //  add forces to it.
+  // a force simulation now and
+  // add forces to it.
   var simulation = d3.forceSimulation()
     .velocityDecay(0.2)
     .force('x', d3.forceX().strength(forceStrength).x(center.x))
@@ -68,18 +68,15 @@ function bubbleChart() {
     .force('charge', d3.forceManyBody().strength(charge))
     .on('tick', ticked);
 
-  // @v4 Force starts up automatically,
-  //  which we don't want as there aren't any nodes yet.
+  // Force starts up automatically,
+  // which we don't want as there aren't any nodes yet.
   simulation.stop();
-
-  // Nice looking colors - no reason to buck the trend
-  // @v4 scales now have a flattened naming scheme
 
   var fillColor = d3.scaleOrdinal(d3.schemeCategory10);
 
-  var fillColor2 = d3.scaleOrdinal()
-    .domain(['lowest', 'average', 'highest'])
-    .range(['#d84b2a', '#beccae', '#7aa25c']);
+  //var fillColor2 = d3.scaleOrdinal()
+    //.domain(['lowest', 'average', 'highest'])
+    //.range(['#d84b2a', '#beccae', '#7aa25c']);
 
   /*
    * This data manipulation function takes the raw data from
@@ -94,9 +91,7 @@ function bubbleChart() {
    * array for each element in the rawData input.
    */
   function createNodes(rawData) {
-    // Use the max total_amount in the data as the max in the scale's domain
-    // note we have to ensure the total_amount is a number.
-    var incomes = nodes.filter(node => node.cat == "Income after taxes");
+   // var incomes = nodes.filter(node => node.cat == "Income after taxes");
     var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
     var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
     var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
@@ -108,9 +103,7 @@ function bubbleChart() {
       highest: maxHigh
     };
 
-
-    // Sizes bubbles based on area.
-    // @v4: new flattened scale names.
+    // Size bubbles based on area.
     var radiusScaleHigh = d3.scalePow()
       .exponent(0.5)
       .range([2, 85])
@@ -125,8 +118,6 @@ function bubbleChart() {
       .domain([0, maxAvg]);
 
     // Use map() to convert raw data into node data.
-    // Checkout http://learnjsdata.com/ for more on
-    // working with data.
     var highestNodes = rawData.map(function (d) {
       var a = +d.highest/maxHigh*100;
       var truncated = Math.floor(a * 100) / 100;
@@ -141,7 +132,6 @@ function bubbleChart() {
         y: Math.random() * 800
       };
     });
-    
     
     var lowestNodes = rawData.map(function (d) {
       var a = +d.lowest/maxLow*100;
@@ -173,25 +163,25 @@ function bubbleChart() {
       };
     });
     
+    //put all retrieved nodes together
     nodes = lowestNodes.concat(highestNodes).concat(avgNodes);
     
     nodes = nodes.filter(node => node.cat != "Income after taxes");
-    // sort them to prevent occlusion of smaller nodes.
+    //sort them to prevent occlusion of smaller nodes.
     nodes.sort(function (a, b) { return b.value - a.value; });
 
     return nodes;
   }
   
-
   /*
-   * Main entry point to the bubble chart. This function is returned
-   * by the parent closure. It prepares the rawData for visualization
+   * Main entry point to the bubble chart 
+   * It prepares the rawData for visualization
    * and adds an svg element to the provided selector and starts the
    * visualization creation process.
    *
    * selector is expected to be a DOM element or CSS selector that
    * points to the parent element of the bubble chart. Inside this
-   * element, the code will add the SVG continer for the visualization.
+   * element, the code will add the SVG container for the visualization.
    *
    * rawData is expected to be an array of data objects as provided by
    * a d3 loading function like d3.csv.
@@ -200,20 +190,16 @@ function bubbleChart() {
     // convert raw data into nodes data
     nodes = createNodes(rawData);
     // Create a SVG element inside the provided selector
-    // with desired size.
     svg = d3.select(selector)
       .append('svg')
       .attr('width', width)
       .attr('height', height);
-
     // Bind nodes data to what will become DOM elements to represent them.
     bubbles = svg.selectAll('.bubble')
       .data(nodes, function (d) { return d.id; });
-
     // Create new circle elements each with class `bubble`.
     // There will be one circle.bubble for each object in the nodes array.
     // Initially, their radius (r attribute) will be 0.
-    // @v4 Selections are immutable, so lets capture the
     //  enter selection to apply our transtition to below.
     var bubblesE = bubbles.enter().append('circle')
       .classed('bubble', true)
@@ -224,7 +210,7 @@ function bubbleChart() {
       .on('mouseover', showDetail)
       .on('mouseout', hideDetail);
 
-    // @v4 Merge the original empty selection and the enter selection
+    // Merge the original empty selection and the enter selection
     bubbles = bubbles.merge(bubblesE);
 
     // Fancy transition to make bubbles appear, ending with the
@@ -234,7 +220,7 @@ function bubbleChart() {
       .attr('r', function (d) { return d.radius; });
 
     // Set the simulation's nodes to our newly created nodes array.
-    // @v4 Once we set the nodes, the simulation will start running automatically!
+    // Once we set the nodes, the simulation will start running automatically!
     simulation.nodes(nodes);
 
     // Set initial layout to single group.
@@ -289,60 +275,48 @@ function bubbleChart() {
    * x force.
    */
   function nodeYearPos(d) {
-    return yearCenters[d.group].x;
+    return centers[d.group].x;
   }
 
 
   /*
    * Sets visualization in "single group mode".
-   * The year labels are hidden and the force layout
+   * The percentile labels are hidden and the force layout
    * tick function is set to move all nodes to the
    * center of the visualization.
    */
   function groupBubbles() {
-    hideYearTitles();
-
-    // @v4 Reset the 'x' force to draw the bubbles to the center.
+    hideLabels();
+    // Reset the 'x' force to draw the bubbles to the center.
     simulation.force('x', d3.forceX().strength(forceStrength).x(center.x));
-
-    // @v4 We can reset the alpha value and restart the simulation
+    // We can reset the alpha value and restart the simulation
     simulation.alpha(1).restart();
   }
 
-
   /*
-   * Sets visualization in "split by year mode".
-   * The year labels are shown and the force layout
+   * Sets visualization in "split by Income Percentile mode".
+   * The percentile labels are shown and the force layout
    * tick function is set to move nodes to the
-   * yearCenter of their data's year.
+   * center of their data's income percentile.
    */
   function splitBubbles() {
-    showYearTitles();
-
-    // @v4 Reset the 'x' force to draw the bubbles to their year centers
+    showLabels();
+    //Reset the 'x' force to draw the bubbles to their year centers
     simulation.force('x', d3.forceX().strength(forceStrength).x(nodeYearPos));
-
-    // @v4 We can reset the alpha value and restart the simulation
+    //We can reset the alpha value and restart the simulation
     simulation.alpha(1).restart();
   }
 
-  /*
-   * Hides Year title displays.
-   */
-  function hideYearTitles() {
+  // Hides percentile Labels.
+  function hideLabels() {
     svg.selectAll('.year').remove();
   }
 
-  /*
-   * Shows Year title displays.
-   */
-  function showYearTitles() {
-    // Another way to do this would be to create
-    // the year texts once and then just hide them.
-    var yearsData = d3.keys(percentileTitles);
+  // Shows Labels.
+  function showLabels() {
+    var percentileData = d3.keys(percentileTitles);
     var years = svg.selectAll('.year')
-      .data(yearsData);
-
+      .data(percentileData);
     years.enter().append('text')
       .attr('class', 'year')
       .attr('x', function (d) { return percentileTitles[d]; })
@@ -350,7 +324,6 @@ function bubbleChart() {
       .attr('text-anchor', 'middle')
       .text(function (d) { return d + "\n | avg_inc: $" + decileMaxs[d]; })
   }
-
 
   /*
    * Function called on mouseover to display the
@@ -379,7 +352,7 @@ function bubbleChart() {
   function hideDetail(d) {
     // reset outline
     d3.select(this)
-      .attr('stroke', d3.rgb(fillColor(d.group)).darker());
+      .attr('stroke', d3.rgb(fillColor(d.cat)).darker());
 
     tooltip.hideTooltip();
   }
@@ -387,9 +360,9 @@ function bubbleChart() {
   /*
    * Externally accessible function (this is attached to the
    * returned chart function). Allows the visualization to toggle
-   * between "single group" and "split by year" modes.
+   * between "single group" and "split by income percentile" modes.
    *
-   * displayName is expected to be a string and either 'year' or 'all'.
+   * displayName is expected to be a string
    */
   chart.toggleDisplay = function (displayName) {
     if (displayName === 'year') {
@@ -398,8 +371,6 @@ function bubbleChart() {
       groupBubbles();
     }
   };
-
-
   // return the chart function from closure.
   return chart;
 }
@@ -408,7 +379,6 @@ function bubbleChart() {
  * Below is the initialization code as well as some helper functions
  * to create a new bubble chart instance, load the data, and display it.
  */
-
 var myBubbleChart = bubbleChart();
 
 /*
@@ -416,10 +386,6 @@ var myBubbleChart = bubbleChart();
  * Calls bubble chart function to display inside #vis div.
  */
 function display(data) {
-  // if (error) {
-  //   console.log(error);
-  // }
-
   myBubbleChart('#vis', data);
 }
 
@@ -463,8 +429,6 @@ function addCommas(nStr) {
 
   return x1 + x2;
 }
-
-
 
 // Load the data.
 // d3.csv('spending_clean.csv', display);
