@@ -19,17 +19,19 @@ function bubbleChart() {
   var center = { x: width / 2, y: height / 2 };
 
   var yearCenters = {
-    2008: { x: width / 3, y: height / 2 },
+    average: { x: width / 3, y: height / 2 },
     lowest: { x: width / 2, y: height / 2 },
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
   // X locations of the year titles.
   var yearsTitleX = {
-    2008: 160,
+    average: 160,
     lowest: width / 2,
     highest: width - 160
   };
+
+  var decileMaxs = {};
 
   // @v4 strength to apply to the position forces
   var forceStrength = 0.03;
@@ -93,9 +95,18 @@ function bubbleChart() {
   function createNodes(rawData) {
     // Use the max total_amount in the data as the max in the scale's domain
     // note we have to ensure the total_amount is a number.
+    var incomes = nodes.filter(node => node.cat == "Income after taxes");
     var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
     var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
-    
+    var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
+    var totalSpent = maxHigh + maxLow + maxAvg;
+    document.getElementById("maxamt").innerHTML = "Total Avg Spendings by Average, Lowest, and Highest Income Levels: $" + totalSpent; 
+    decileMaxs = {
+      lowest: maxLow,
+      average: maxAvg,
+      highest: maxHigh
+    };
+
 
     // Sizes bubbles based on area.
     // @v4: new flattened scale names.
@@ -107,6 +118,10 @@ function bubbleChart() {
       .exponent(0.5)
       .range([2, 85])
       .domain([0, maxLow]);
+    var radiusScaleAvg = d3.scalePow()
+      .exponent(0.5)
+      .range([2, 85])
+      .domain([0, maxAvg]);
 
     // Use map() to convert raw data into node data.
     // Checkout http://learnjsdata.com/ for more on
@@ -141,7 +156,25 @@ function bubbleChart() {
         y: Math.random() * 800
       };
     });
-    nodes = lowestNodes.concat(highestNodes);
+
+    var avgNodes = rawData.map(function (d) {
+      var a = +d.lowest/maxAvg*100;
+      var truncated = Math.floor(a * 100) / 100;
+      return {
+        cat: d.cat,
+        radius: radiusScaleAvg(+d.fifth),
+        value: +d.fifth,
+        name: d.cat,
+        group: "average",
+        percentTotal: truncated,
+        x: Math.random() * 900,
+        y: Math.random() * 800
+      };
+    });
+    
+    nodes = lowestNodes.concat(highestNodes).concat(avgNodes);
+    
+    nodes = nodes.filter(node => node.cat != "Income after taxes");
     // sort them to prevent occlusion of smaller nodes.
     nodes.sort(function (a, b) { return b.value - a.value; });
 
@@ -215,6 +248,7 @@ function bubbleChart() {
    * These x and y values are modified by the force simulation.
    */
   function ticked() {
+
     bubbles
       .attr('cx', function (d) { return d.x; })
       .attr('cy', function (d) { return d.y; });
@@ -284,7 +318,7 @@ function bubbleChart() {
       .attr('x', function (d) { return yearsTitleX[d]; })
       .attr('y', 40)
       .attr('text-anchor', 'middle')
-      .text(function (d) { return d; });
+      .text(function (d) { return d + "\n | avg_inc: $" + decileMaxs[d]; })
   }
 
 
