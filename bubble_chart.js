@@ -8,7 +8,7 @@
  */
 function bubbleChart() {
   // Constants for sizing
-  var width = 940;
+  var width = 1200;
   var height = 600;
 
   // tooltip for mouseover functionality
@@ -24,7 +24,7 @@ function bubbleChart() {
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
-  var  percentileTitles = {
+  var percentileTitles = {
     average: 160,
     lowest: width / 2,
     highest: width - 160
@@ -58,8 +58,8 @@ function bubbleChart() {
     return -Math.pow(d.radius, 2.0) * forceStrength;
   }
   var attractForce = d3.forceManyBody().strength(30).distanceMax(1000)
-                     .distanceMin(1000);
-var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
+    .distanceMin(1000);
+  var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
 
   // Here we create a force layout and
   // @v4 We create a force simulation now and
@@ -106,7 +106,7 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
     var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
     var totalSpent = maxHigh + maxLow + maxAvg;
-    document.getElementById("maxamt").innerHTML = "Total Avg Spendings by Average, Lowest, and Highest Income Levels: $" + totalSpent; 
+    document.getElementById("maxamt").innerHTML = " $" + totalSpent;
     decileMaxs = {
       lowest: maxLow,
       average: maxAvg,
@@ -133,7 +133,7 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     // Checkout http://learnjsdata.com/ for more on
     // working with data.
     var highestNodes = rawData.map(function (d) {
-      var a = +d.highest/maxHigh*100;
+      var a = +d.highest / maxHigh * 100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
@@ -146,10 +146,10 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
         y: Math.random() * 800
       };
     });
-    
-    
+
+
     var lowestNodes = rawData.map(function (d) {
-      var a = +d.lowest/maxLow*100;
+      var a = +d.lowest / maxLow * 100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
@@ -164,7 +164,7 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     });
 
     var avgNodes = rawData.map(function (d) {
-      var a = +d.fifth/maxAvg*100;
+      var a = +d.fifth / maxAvg * 100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
@@ -177,16 +177,16 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
         y: Math.random() * 800
       };
     });
-    
+
     nodes = lowestNodes.concat(highestNodes).concat(avgNodes);
-    
+
     nodes = nodes.filter(node => node.cat != "Income after taxes");
     // sort them to prevent occlusion of smaller nodes.
     nodes.sort(function (a, b) { return b.value - a.value; });
 
     return nodes;
   }
-  
+
 
   /*
    * Main entry point to the bubble chart. This function is returned
@@ -223,15 +223,15 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     var bubblesE = bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .style("fill", function(d){
-                   //get the value of the checked
-                   var value = d3.select('input[name="colorgroups"]:checked').node().value;
-                   if(value =="byCat"){
-                      return fillColor(d.cat);
-                   } else {
-                      return fillColor2(d.group); 
-                   }
-       })
+      .style("fill", function (d) {
+        //get the value of the checked
+        var value = d3.select('input[name="colorgroups"]:checked').node().value;
+        if (value == "byCat") {
+          return fillColor(d.cat);
+        } else {
+          return fillColor2(d.group);
+        }
+      })
       .attr('stroke', function (d) { return d3.rgb(fillColor(d.cat)).darker(); })
       .attr('stroke-width', 5)
       .on('mouseover', showDetail)
@@ -259,7 +259,7 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     clearLegend();
     var value = d3.select('input[name="colorgroups"]:checked').node().value;
     var legendData;
-    if(value =="byCat"){
+    if (value == "byCat") {
       legendData = fillColor;
     }
     else {
@@ -275,40 +275,40 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
       .data(legendData.domain())
       .enter()
       .append('g')
-        .attr('transform', function(d, i) {
-          var height = legendRectSize;
-          var x = 0;
-          var y = i * height + 100;
-          return 'translate(' + x + ',' + y + ')';
+      .attr('transform', function (d, i) {
+        var height = legendRectSize;
+        var x = -20;
+        var y = i * height + 100;
+        return 'translate(' + x + ',' + y + ')';
       });
-      legend.append('rect')
-        .attr('width', legendRectSize)
-        .attr('height', legendRectSize)
-        .style('fill', legendData)
-        .style('stroke', legendData);
+    legend.append('rect')
+      .attr('width', legendRectSize)
+      .attr('height', legendRectSize)
+      .style('fill', legendData)
+      .style('stroke', legendData);
 
     legend.append('text')
-        .attr('x', legendRectSize + legendSpacing)
-        .attr('y', legendRectSize - legendSpacing)
-        .text(function(d) { return d; });
-        // .on("click", function(d){
-        //     var newNodes = nodes.filter(node => node.cat == d);
-        //     // d3.selectAll('.bubble')
-        //     // .remove();
-        //     enodes = [];
-        //     simulation.nodes(enodes);
-        //     bubbles = svg.selectAll('.bubble')
-        //     .data(newNodes, function (d) { return d.id; });
-        //     simulation.nodes(newNodes);
-        //     console.log(simulation.nodes());
-        //     simulation.nodes(nodes.filter(node => node.cat == d));
-            
+      .attr('x', legendRectSize + legendSpacing)
+      .attr('y', legendRectSize - legendSpacing)
+      .text(function (d) { return d; });
+    // .on("click", function(d){
+    //     var newNodes = nodes.filter(node => node.cat == d);
+    //     // d3.selectAll('.bubble')
+    //     // .remove();
+    //     enodes = [];
+    //     simulation.nodes(enodes);
+    //     bubbles = svg.selectAll('.bubble')
+    //     .data(newNodes, function (d) { return d.id; });
+    //     simulation.nodes(newNodes);
+    //     console.log(simulation.nodes());
+    //     simulation.nodes(nodes.filter(node => node.cat == d));
 
-        // })
+
+    // })
   }
   function clearLegend() {
     d3.select('#legend')
-    .remove();
+      .remove();
   }
   /*
    * Callback function that is called after every tick of the
@@ -322,16 +322,16 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     bubbles
       .attr('cx', function (d) { return d.x; })
       .attr('cy', function (d) { return d.y; })
-      .style("fill", function(d){
-                   //get the value of the checked
-                   var value = d3.select('input[name="colorgroups"]:checked').node().value;
-                   if(value =="byCat"){
-                      return fillColor(d.cat);
-                   } else {
-                      return fillColor2(d.group); 
-                   }
+      .style("fill", function (d) {
+        //get the value of the checked
+        var value = d3.select('input[name="colorgroups"]:checked').node().value;
+        if (value == "byCat") {
+          return fillColor(d.cat);
+        } else {
+          return fillColor2(d.group);
+        }
       });
-      setupLegend();
+    setupLegend();
   }
 
   /*
@@ -411,14 +411,14 @@ var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
     d3.select(this).attr('stroke', 'black');
 
     var content = '<span class="name">Title: </span><span class="value">' +
-                  d.name +
-                  '</span><br/>' +
-                  '<span class="name">Amount: </span><span class="value">$' +
-                  addCommas(d.value) +
-                  '</span><br/>' +
-                  '<span class="name">Percent of Total Income: </span><span class="value">' +
-                  d.percentTotal +
-                  '%</span>';
+      d.name +
+      '</span><br/>' +
+      '<span class="name">Amount: </span><span class="value">$' +
+      addCommas(d.value) +
+      '</span><br/>' +
+      '<span class="name">Percent of Total Income: </span><span class="value">' +
+      d.percentTotal +
+      '%</span>';
 
     tooltip.showTooltip(content, d3.event);
   }
@@ -515,15 +515,15 @@ function addCommas(nStr) {
 }
 
 function main() {
-// Load the data.
-// d3.csv('spending_clean.csv', display);
-d3.csv('spending_clean.csv')
-  .then(function(data) {
+  // Load the data.
+  // d3.csv('spending_clean.csv', display);
+  d3.csv('spending_clean.csv')
+    .then(function (data) {
       myBubbleChart('#vis', data);
-  })
-  .catch(function(error){
-     console.log(error);
-  })
+    })
+    .catch(function (error) {
+      console.log(error);
+    })
 }
 
 main();
