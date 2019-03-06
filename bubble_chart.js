@@ -32,7 +32,6 @@ function bubbleChart() {
 
   var decileMaxs = {};
 
-  // @v4 strength to apply to the position forces
   var forceStrength = 0.1;
 
   // These will be set in create_nodes and create_vis
@@ -61,9 +60,6 @@ function bubbleChart() {
     .distanceMin(1000);
   var collisionForce = d3.forceCollide(1).strength(.8).iterations(2);
 
-  // Here we create a force layout and
-  // @v4 We create a force simulation now and
-  //  add forces to it.
   var simulation = d3.forceSimulation().alphaDecay(.01)
     .velocityDecay(0.2)
     .force('x', d3.forceX().strength(forceStrength).x(center.x))
@@ -96,9 +92,6 @@ function bubbleChart() {
    * array for each element in the rawData input.
    */
   function createNodes(rawData) {
-    // Use the max total_amount in the data as the max in the scale's domain
-    // note we have to ensure the total_amount is a number.
-    
     var maxHigh = d3.max(rawData, function (d) { return +d.highest; });
     var maxLow = d3.max(rawData, function (d) { return +d.lowest; });
     var maxAvg = d3.max(rawData, function (d) { return +d.fifth; });
@@ -140,8 +133,7 @@ function bubbleChart() {
         y: Math.random() * 800
       };
     });
-
-
+    
     var lowestNodes = rawData.map(function (d) {
       var a = +d.lowest / maxLow * 100;
       var truncated = Math.floor(a * 100) / 100;
@@ -171,6 +163,7 @@ function bubbleChart() {
         y: Math.random() * 800
       };
     });
+    
     nodes = lowestNodes.concat(highestNodes).concat(avgNodes);
 
     nodes = nodes.filter(node => node.cat != "Income after taxes");
@@ -179,7 +172,6 @@ function bubbleChart() {
 
     return nodes;
   }
-
 
   /*
    * Main entry point to the bubble chart 
