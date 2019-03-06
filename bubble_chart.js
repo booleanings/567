@@ -24,12 +24,7 @@ function bubbleChart() {
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
-  var percentileTitles = {
-    //2008: 160,
-    lowest: 265,
-    highest: width - 290
-  }
-  var yearsTitleX = {
+  var  percentileTitles = {
     average: 160,
     lowest: width / 2,
     highest: width - 160
@@ -252,10 +247,10 @@ function bubbleChart() {
   };
 
   function setupLegend() {
-    var legendRectSize = 30;
-    var legendSpacing = 10;
+    var legendRectSize = 20;
+    var legendSpacing = 7;
     var legend = d3.select('svg')
-      .append("g")
+      .append("g")   
       .attr('id', 'legend')
       .selectAll("g")
       .data(fillColor.domain())
@@ -263,7 +258,7 @@ function bubbleChart() {
       .append('g')
         .attr('transform', function(d, i) {
           var height = legendRectSize;
-          var x = 0;
+          var x = -10;
           var y = i * height + 100;
           return 'translate(' + x + ',' + y + ')';
       });
@@ -298,7 +293,7 @@ function bubbleChart() {
    * x force.
    */
   function nodeYearPos(d) {
-    return bubbleCenters[d.group].x;
+    return yearCenters[d.group].x;
   }
 
 
