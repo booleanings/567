@@ -76,14 +76,10 @@ function bubbleChart() {
   // @v4 scales now have a flattened naming scheme
 
   var fillColor = d3.scaleOrdinal(d3.schemeCategory10);
-   // .domain(['low', 'medium', 'high'])
-    //.range(['#d84b2a', '#beccae', '#7aa25c']);
 
   var fillColor2 = d3.scaleOrdinal()
     .domain(['lowest', 'average', 'highest'])
     .range(['#d84b2a', '#beccae', '#7aa25c']);
-  
-
 
   /*
    * This data manipulation function takes the raw data from
@@ -163,7 +159,7 @@ function bubbleChart() {
     });
 
     var avgNodes = rawData.map(function (d) {
-      var a = +d.lowest/maxAvg*100;
+      var a = +d.fifth/maxAvg*100;
       var truncated = Math.floor(a * 100) / 100;
       return {
         cat: d.cat,
