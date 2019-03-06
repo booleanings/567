@@ -20,14 +20,14 @@ function bubbleChart() {
 
   var yearCenters = {
     2008: { x: width / 3, y: height / 2 },
-    2009: { x: width / 2, y: height / 2 },
+    lowest: { x: width / 2, y: height / 2 },
     highest: { x: 2 * width / 3, y: height / 2 },
   };
 
   // X locations of the year titles.
   var yearsTitleX = {
     2008: 160,
-    2009: width / 2,
+    lowest: width / 2,
     highest: width - 160
   };
 
@@ -90,12 +90,11 @@ function bubbleChart() {
    * This function returns the new node array, with a node in that
    * array for each element in the rawData input.
    */
-
   function createNodes(rawData) {
     // Use the max total_amount in the data as the max in the scale's domain
     // note we have to ensure the total_amount is a number.
     var maxAmount = d3.max(rawData, function (d) { return +d.highest; });
-    document.getElementById('maxamt').innerHTML = maxAmount;
+    
 
     // Sizes bubbles based on area.
     // @v4: new flattened scale names.
@@ -119,11 +118,24 @@ function bubbleChart() {
       };
     });
 
+    var lowestNodes = rawData.map(function (d) {
+      return {
+        cat: d.cat,
+        radius: radiusScale(+d.lowest),
+        value: +d.lowest,
+        name: d.cat,
+        group: "lowest",
+        x: Math.random() * 900,
+        y: Math.random() * 800
+      };
+    });
+    nodes = lowestNodes.concat(highestNodes);
     // sort them to prevent occlusion of smaller nodes.
-    highestNodes.sort(function (a, b) { return b.value - a.value; });
+    nodes.sort(function (a, b) { return b.value - a.value; });
 
-    return highestNodes;
+    return nodes;
   }
+  
 
   /*
    * Main entry point to the bubble chart. This function is returned
@@ -141,7 +153,6 @@ function bubbleChart() {
   var chart = function chart(selector, rawData) {
     // convert raw data into nodes data
     nodes = createNodes(rawData);
-
     // Create a SVG element inside the provided selector
     // with desired size.
     svg = d3.select(selector)
