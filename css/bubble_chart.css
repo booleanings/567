@@ -3,14 +3,16 @@ a, a:visited, a:active {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 90%;
   margin: auto;
 }
 
 #legend {
   margin-top: 20%;
-  margin: 10%;
-  color: red;
+  font-size: .9em;
+}
+.switch{
+  margin-top: 10%;
 }
 .button {
   min-width: 130px;
@@ -19,12 +21,13 @@ a, a:visited, a:active {
   text-align: center;
   font-size: 13px;
   border: 1px solid #e0e0e0;
+  background-color: ghostwhite;
   text-decoration: none;
 }
 
 .button.active {
-  background: #000;
-  color: #fff;
+  background: darkgreen;
+  color:  mediumspringgreen;
 }
 
 
@@ -42,7 +45,7 @@ a, a:visited, a:active {
 
 h1 {
   color: floralwhite;
-  background-color: darkslategray;
+  background-color: darkgreen;
   padding: 3%;
 }
 .year {
